@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using BusinessEntities;
@@ -28,6 +30,11 @@ namespace WebApi.Controllers
         [HttpPost]
         public HttpResponseMessage CreateUser(Guid userId, [FromBody] UserModel model)
         {
+            var existingUser = _getUserService.GetUser(userId);
+            if (existingUser != null)
+            {
+                userId = Guid.NewGuid(); //Task 1 : Generate a new GUID if the user ID already exists
+            }
             var user = _createUserService.Create(userId, model.Name, model.Email, model.Type, model.AnnualSalary, model.Tags);
             return Found(new UserData(user));
         }
@@ -36,6 +43,12 @@ namespace WebApi.Controllers
         [HttpPost]
         public HttpResponseMessage UpdateUser(Guid userId, [FromBody] UserModel model)
         {
+            //Task 1 : Validate the empty email address
+            if (string.IsNullOrEmpty(model.Email))
+            {
+                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Email is empty for the user.");
+            }
+
             var user = _getUserService.GetUser(userId);
             if (user == null)
             {
@@ -89,7 +102,18 @@ namespace WebApi.Controllers
         [HttpGet]
         public HttpResponseMessage GetUsersByTag(string tag)
         {
-            throw new NotImplementedException();
+            // Example implementation
+            var users = GetUsersFromDatabaseByTag(tag); // Assume this method fetches users from the database
+            if (users == null || !users.Any())
+            {
+                return Request.CreateResponse(HttpStatusCode.NotFound, "No users found with the given tag.");
+            }
+            return Request.CreateResponse(HttpStatusCode.OK, users);
+        }
+
+        private IEnumerable<User> GetUsersFromDatabaseByTag(string tag)
+        {
+            return new List<User>();
         }
     }
 }

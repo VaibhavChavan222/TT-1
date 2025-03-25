@@ -12,7 +12,15 @@ namespace Core.Services.Users
             user.SetEmail(email);
             user.SetName(name);
             user.SetType(type);
-            user.SetMonthlySalary(annualSalary.Value / 12);
+            if (annualSalary.HasValue)
+            {
+                user.SetMonthlySalary(annualSalary.Value / 12);
+            }
+            else
+            {
+                //Task 1 : Handle the case where annualSalary is null then set a default value.
+                user.SetMonthlySalary(1000); // Example default value
+            }
             user.SetTags(tags);
         }
     }
